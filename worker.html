@@ -8,16 +8,19 @@
 <script src="src/R2.js"></script>
 <script src="src/Reporter.js"></script>
 
+<!--
 Best find: <span id="best-find">N/A</span><br/>
 Time: <span id="time">N/A</span><br/>
 Seed: <span id="seed">N/A</span><br/>
 Current: <span id="current">N/A</span><br/>
+-->
 
 Iterations per cycle: <span id="iterations-per-cycle">N/A</span><br/>
 Time per cycle: <span id="time-per-cycle">N/A</span><br/>
 
 <script>
-var manager = new Manager();
+var manager = new Manager(),
+    reporter = new Reporter(manager);
 /*
 var reporter = new Reporter();
 
@@ -28,7 +31,7 @@ dga.run();
 */
 </script>
 
-<button onclick="manager.start();">Start</button>
+<button onclick="manager.start(); reporter.start();">Start</button>
 <button onclick="manager.stop();">Stop</button>
 <button onclick="manager.clear()">Clear</button>
 
