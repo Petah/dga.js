@@ -1,0 +1,21 @@
+{
+  "name": "dgajs",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Petah/dga.js",
+  "authors": [
+    "David Neilsen <petah.p@gmail.com>"
+  ],
+  "license": "AGPL",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "socket.io-client": "~0.9.16",
+    "jquery": "~2.1.0"
+  }
+}

@@ -1,5 +1,6 @@
-<script src="libraries/jquery.js"></script>
-<script src="libraries/highcharts.js"></script>
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.js"></script>
+<script src="../bower_components/scket.io-client/socket.io.js"></script>
 
 <script src="src/Generator.js"></script>
 <script src="src/Manager.js"></script>
@@ -7,6 +8,7 @@
 <script src="src/R1.js"></script>
 <script src="src/R2.js"></script>
 <script src="src/Reporter.js"></script>
+<script src="src/DataBinder.js"></script>
 
 <!--
 Best find: <span id="best-find">N/A</span><br/>
@@ -14,70 +16,86 @@ Time: <span id="time">N/A</span><br/>
 Seed: <span id="seed">N/A</span><br/>
 Current: <span id="current">N/A</span><br/>
 -->
-
-Iterations per cycle: <span id="iterations-per-cycle">N/A</span><br/>
-Time per cycle: <span id="time-per-cycle">N/A</span><br/>
+<div class="bind">
+    Iterations per cycle: <span data-bind="manager.iterationsPerCycle">N/A</span><br/>
+    Time per cycle: <span data-bind="manager.timePerCycle">N/A</span>ms<br/>
+    Ideal iterations: <span data-bind="manager.iterationsIdeal">N/A</span><br/>
+    Max iterations: <span data-bind="manager.iterationsMax">N/A</span><br/>
+    Profile interval: <span data-bind="manager.profileInterval">N/A</span><br/>
+</div>
 
 <script>
-var manager = new Manager(),
-    reporter = new Reporter(manager);
-/*
-var reporter = new Reporter();
-
-manager.start();
-var seed = localStorage.getItem('seed') || 1,
-    dga = new Reporter (new Matcher(data, new R2(), seed));
-dga.run();
-*/
+var data = 'hello';
+var 
+    generator = new R1(),
+    worker = new Matcher(generator, data),
+    manager = new Manager(worker),
+    reporter = new Reporter(manager),
+    dataBinder = new DataBinder('.bind', {
+        manager: manager
+    });
 </script>
 
-<button onclick="manager.start(); reporter.start();">Start</button>
+<button onclick="manager.profileOnce();">Run Once</button>
+<button onclick="manager.start();">Start</button>
 <button onclick="manager.stop();">Stop</button>
 <button onclick="manager.clear()">Clear</button>
 
 
 <div id="chart"></div>
 <script>
-    /*
-    jQuery(function($) {
-        var categories = [],
-            chartData = [];
-        for (var i = 0; i < 256; i++) {
-            categories.push(i);
-            chartData.push(0);
-        }
-        for (var i = 0; i < data.length; i++) {
-            chartData[data.charCodeAt(i)]++;
-        }
-        $('#chart').highcharts({
-            chart: {
-                type: 'column',
-                events: {
-                    load: function() {
-                        var series = this.series[0];
-                        setInterval(function() {
-                            var x = (new Date()).getTime(), // current time
-                                y = Math.random();
-                            series.addPoint([x, y], true, true);
-                        }, 1000);
-                    }
+    var chart;
+    $('#chart').highcharts({
+        chart: {
+            type: 'spline',
+            marginRight: 10,
+            events: {
+                load: function() {
+                    setInterval(function() {
+                        this.series[0].addPoint([new Date().getTime(), manager.iterationsPerCycle], true, true);
+                    }.bind(this), 1000);
                 }
+            }
+        },
+        title: {
+            text: 'Live random data'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
             },
-            xAxis: {
-                categories: categories,
-                labels: {
-                    rotation: -90,
-                    align: 'right',
-                    style: {
-                        fontSize: '6px'
-                    }
-                }
-            },
-            series: [{
-                name: 'Data',
-                data: chartData
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
             }]
-        });
+        },
+        legend: {
+            enabled: false
+        },
+        exporting: {
+            enabled: false
+        },
+            series: [{
+                name: 'Random data',
+                data: (function() {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+    
+                    for (i = -19; i <= 0; i++) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: 0
+                        });
+                    }
+                    return data;
+                })()
+            }]
     });
-    */
 </script>

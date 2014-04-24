@@ -1,0 +1,26 @@
+{
+  "name": "dgajs",
+  "version": "0.0.0",
+  "description": "DGA",
+  "main": "node/dga.js",
+  "dependencies": {
+    "duration": "~0.1.4",
+    "extend": "~1.2.1",
+    "numeral": "^1.5.3",
+    "simple-statistics": "^0.8.0",
+    "engine.io": "^1.0.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Petah/dga.js.git"
+  },
+  "license": "AGPL",
+  "bugs": {
+    "url": "https://github.com/Petah/dga.js/issues"
+  },
+  "homepage": "https://github.com/Petah/dga.js"
+}
