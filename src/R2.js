@@ -1,10 +1,16 @@
+var extend = require('extend');
+var R1 = require('./R1');
+
 function R2() {
+	R1.call(this);
     this.name = 'R2';
-    this.chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/';
+    this.chars = 'abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789';
 };
 
-R2.prototype = Object.create(R1.prototype);
+extend(R2.prototype, R1.prototype);
 
-R2.prototype.current = function() {
-    return this.chars.charCodeAt(R1.prototype.current.apply(this, arguments) % 64);
+R2.prototype.getChar = function(i) {
+    return this.chars[this.getInt(i) % this.chars.length];
 };
+
+module.exports = R2;

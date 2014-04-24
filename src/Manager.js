@@ -1,57 +1,67 @@
-function Manager() {
-	this.generator = null;
-	this.matcher = null;
-	this.reporter = null;
+var extend = require('extend');
+var numeral = require('numeral');
+var ss = require('simple-statistics');
+var IntervalManager = require('./IntervalManager');
+var Loggable = require('./Loggable');
+var Timer = require('./Timer');
+
+function Manager(worker) {
+	IntervalManager.call(this);
+	Loggable.call(this);
+
+	this.worker = worker;
 	this.timePerCycle = null;
+	this.timers.push({
+		callback: this.timeIterationsPerSecond.bind(this),
+		interval: 1000
+	});
 
-	this.timers = [];
-
-	this.iterations = 100000;
-	this.iterationStep = 100000;
-	this.interval = 1000;
-	this.profileInterval = 1000;
-	this.idealProfile = 1000;
+	this.totalIterations = 0;
+    this.iterationsPerCycle = 0;
+	this.iterationsPerSecond = [];
+	this.iterationsLastSecond = 0;
+	this.timer = new Timer();
 };
 
+extend(Manager.prototype, IntervalManager.prototype);
+extend(Manager.prototype, Loggable.prototype);
+
 Manager.prototype.start = function() {
-	this.stop();
-	this.timers = [
-		//setInterval(this.cycle.bind(this), this.interval),
-		setInterval(this.profile.bind(this), this.profileInterval),
-	];
+	this.startTimers();
+	this.startTime = new Date();
 };
 
 Manager.prototype.stop = function() {
-	for (var i = 0; i < this.timers.length; i++) {
-		clearTimeout(this.timers[i]);
-	}
-	this.timers = [];
+	this.stopTimers();
+	this.iterationsPerCycle = 0;
 };
 
-Manager.prototype.clear = function() {
-};
-
-Manager.prototype.profile = function() {
-	var now = new Date().getTime();
-	this.cycle();
-	this.timePerCycle = new Date().getTime() - now;
-	if (this.timePerCycle < this.idealProfile) {
-		this.increaseIterations();
-	}
-};
-		
 Manager.prototype.cycle = function() {
-	var i = this.iterations;
-	while (--i) {
-		this.work();
+	throw new Error('Subclass must implement cycle');
+};
+
+Manager.prototype.timeIterationsPerSecond = function() {
+	this.iterationsPerSecond.push(this.totalIterations - this.iterationsLastSecond);
+	if (this.iterationsPerSecond.length > 5) {
+		this.iterationsPerSecond.shift();
 	}
+	this.iterationsLastSecond = this.totalIterations;
 };
 
-Manager.prototype.work = function() {
-    var x = Math.sin(Math.random()) * 10000;
-    y = x - Math.floor(x);
+Manager.prototype.getWorker = function() {
+	return this.worker;
 };
 
-Manager.prototype.increaseIterations = function() {
-	this.iterations += this.iterationStep;
+Manager.prototype.setWorker = function(worker) {
+	this.worker = worker;
+	return this;
 };
+
+Manager.prototype.getLogData = function() {
+	return {
+		'Iterations per second': this.iterationsPerSecond,
+		'Average iterations per second': numeral(ss.average(this.iterationsPerSecond)).format('0,0'),
+	};
+};
+
+module.exports = Manager;
