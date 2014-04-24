@@ -1,0 +1,45 @@
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.js"></script>
+<script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
+
+<script src="../packages/dga.js"></script>
+
+<style>
+p {
+    margin: 0;
+}
+</style>
+
+<script>
+    var data = 'hello';
+    var generator = new DGA.R2();
+    var logger = new DGA.HTMLLogger();
+    var manager = new DGA.TimedManager();
+    var worker = new DGA.Matcher();
+
+    worker.setData(data);
+    worker.setGenerator(generator);
+    manager.setWorker(worker);
+</script>
+<button onclick="manager.profileOnce();">Run Once</button>
+<button onclick="manager.start();">Start</button>
+<button onclick="manager.stop();">Stop</button>
+<button onclick="manager.clear()">Clear</button>
+<div id="log"></div>
+<script>
+    logger.setNode(document.getElementById('log'))
+    logger.addLoggable(manager);
+    logger.addLoggable(worker);
+    var socket = io.connect('http://localhost');
+    socket.on('connect', function() {
+        socket.emit('register-worker', {
+            name: 'Neptune'
+        });
+        setInterval(function() {
+            socket.emit('work', {
+                name: 'Neptune',
+                manager: manager
+            });
+        }, 1000);
+    });
+</script>

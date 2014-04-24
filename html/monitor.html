@@ -1,0 +1,87 @@
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.src.js"></script>
+<script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
+<div id="chart"></div>
+<script>
+    var workers = {};
+	var socket = io.connect('http://localhost');
+    socket.on('register-worker', function(worker) {
+        var series = chart.addSeries({
+            name: worker.name,
+            data: (function() {
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+
+                for (i = -19; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()
+        });
+        workers[worker.name] = {
+            series: series
+        };
+    });
+	socket.on('work', function(worker) {
+        if (!workers[worker.name]) {
+            return;
+        }
+        workers[worker.name].series.addPoint([new Date().getTime(), worker.manager.iterationsPerCycle], true, true);
+	});
+	
+	var chart;
+    $('#chart').highcharts({
+        chart: {
+            type: 'spline',
+            marginRight: 10,
+            events: {
+                load: function() {
+                	chart = this;
+                }
+            }
+        },
+        title: {
+            text: 'Live random data'
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        legend: {
+            enabled: false
+        },
+        exporting: {
+            enabled: false
+        },
+        series: []/*[{
+            name: 'Random data',
+            data: (function() {
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+
+                for (i = -19; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()
+        }]*/
+    });
+</script>
