@@ -1,19 +1,18 @@
-module.exports = {
-    Charter: require("../src/Charter.js"),
-    CLILogger: require("../src/CLILogger.js"),
-    DataBinder: require("../src/DataBinder.js"),
-    Encoder: require("../src/Encoder.js"),
-    Generator: require("../src/Generator.js"),
-    HTMLLogger: require("../src/HTMLLogger.js"),
-    IntervalManager: require("../src/IntervalManager.js"),
-    Loggable: require("../src/Loggable.js"),
-    LogReporter: require("../src/LogReporter.js"),
-    Manager: require("../src/Manager.js"),
-    Matcher: require("../src/Matcher.js"),
-    OptimisingManager: require("../src/OptimisingManager.js"),
-    R1: require("../src/R1.js"),
-    R2: require("../src/R2.js"),
-    Reporter: require("../src/Reporter.js"),
-    TimedManager: require("../src/TimedManager.js"),
-    Timer: require("../src/Timer.js"),
+Duration = require('duration');
+cluster = require('cluster');
+extend = require('extend');
+numeral = require('numeral');
+ss = require('simple-statistics');
+
+inherit = function(parent, child, args) {
+    for (var key in parent.prototype) {
+        if (!child[key]) {
+            child[key] = parent.prototype[key];
+        }
+    }
+    parent.apply(child, args || []);
 };
+
+require('require-dir')(__dirname + '/../src', {
+    recurse: true,
+});

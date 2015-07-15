@@ -1,0 +1,32 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: #bdbdbd;
+}
+
+body {
+    margin: 0;
+}
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.log {
+    width: 33.33%;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.log table {
+    width: 100%;
+    background-color: white;
+}
+
+td, th {
+    white-space: pre;
+    font-family: monospace;
+}

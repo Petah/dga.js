@@ -1,0 +1,31 @@
+<!doctype html>
+<html ng-app="dga">
+    <head>
+        <meta charset="utf-8">
+        <title>DGA.js</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/dga.css">
+    </head>
+    <body>
+        <div ng-controller="IndexController" class="flex">
+            <div ng-repeat="(name, log) in logs" class="log">
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">{{ name }}</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="(key, value) in log">
+                        <td>{{ key }}</td>
+                        <td>{{ value }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <script src="/js/jquery.js"></script>
+        <script src="/js/angular.js"></script>
+        <script src="/js/dga.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+    </body>
+</html>

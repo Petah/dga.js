@@ -1,8 +1,6 @@
-require('./index');
-
 var data = 'hello';
-var generator = new R5();
-var logger = new CLILogger();
+var generator = new R3();
+var logger = new ClusterLogger();
 //var manager = new TimedManager();
 var manager = new CycleManager();
 var worker = new Matcher();

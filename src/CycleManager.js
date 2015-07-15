@@ -1,7 +1,7 @@
-TimedManager = function () {
+CycleManager = function () {
     inherit(Manager, this);
 
-    this.idealCycleTime = 500;
+    this.cycles = 100000;
 
     this.timers.push({
         callback: this.cycle.bind(this),
@@ -9,14 +9,14 @@ TimedManager = function () {
     });
 };
 
-TimedManager.prototype.cycle = function () {
+CycleManager.prototype.cycle = function () {
     this.timer.start();
     this.iterationsPerCycle = 0;
-    while (this.timer.current() < this.idealCycleTime) {
-        this.iterationsPerCycle++;
+    var i = this.cycles;
+    while (--i) {
         this.worker.work();
     }
-    this.totalIterations += this.iterationsPerCycle;
+    this.totalIterations += this.cycles;
     this.timePerCycle = this.timer.current();
     this.log();
     if (this.worker.complete) {
@@ -24,12 +24,10 @@ TimedManager.prototype.cycle = function () {
     }
 };
 
-TimedManager.prototype.getLogData = function () {
+CycleManager.prototype.getLogData = function () {
     return extend(Manager.prototype.getLogData.call(this), {
         'Total iterations': numeral(this.totalIterations).format('0,0'),
-        'Iterations per cycle': numeral(this.iterationsPerCycle).format('0,0'),
         'Time per cycle': numeral(this.timePerCycle).format('0,0.0000'),
-        'Ideal cycle time': numeral(this.idealCycleTime).format('0,0'),
         'Complete': this.worker.complete ? 'Yes' : 'No',
     });
 };
