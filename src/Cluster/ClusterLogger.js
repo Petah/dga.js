@@ -13,4 +13,7 @@ ClusterLogger.prototype.log = function () {
 ClusterLogger.prototype.addLoggable = function (loggable) {
     this.loggables.push(loggable);
     loggable.setLogger(this);
+    loggable.on('update', function() {
+        console.log(loggable);
+    });
 };

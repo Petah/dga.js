@@ -13,13 +13,19 @@ CycleManager.prototype.cycle = function () {
     this.timer.start();
     this.iterationsPerCycle = 0;
     var i = this.cycles;
-    while (--i) {
-        this.worker.work();
+    try {
+        while (--i) {
+            this.worker.work();
+        }
+    } catch (exception) {
+        if (!(exception instanceof CompleteException)) {
+            throw exception;
+        }
     }
     this.totalIterations += this.cycles;
     this.timePerCycle = this.timer.current();
     this.log();
-    if (this.worker.complete) {
+    if (this.worker.isComplete()) {
         this.stop();
     }
 };

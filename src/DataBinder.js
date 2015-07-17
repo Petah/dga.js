@@ -2,7 +2,7 @@ DataBinder = function (template, root) {
     this.template = template;
     this.root = root;
 
-    this.timer - setInterval(this.update.bind(this), 300);
+    this.timer = new Interval(this.update.bind(this), 300);
 };
 
 DataBinder.prototype.update = function () {

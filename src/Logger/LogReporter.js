@@ -1,6 +1,6 @@
 LogReporter = function (manager) {
     this.manager = manager;
-    setInterval(this.update.bind(this), 1000 / 30);
+    new Interval(this.update.bind(this), 1000 / 30);
 };
 
 LogReporter.prototype.update = function () {

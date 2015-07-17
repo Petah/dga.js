@@ -1,5 +1,6 @@
 Manager = function(worker) {
     inherit(IntervalManager, this);
+    inherit(Eventable, this);
     inherit(Loggable, this);
 
     this.worker = worker;
@@ -24,6 +25,7 @@ Manager.prototype.start = function () {
 Manager.prototype.stop = function () {
     this.stopTimers();
     this.iterationsPerCycle = 0;
+    this.trigger('complete');
 };
 
 Manager.prototype.cycle = function () {

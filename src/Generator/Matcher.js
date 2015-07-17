@@ -1,56 +1,55 @@
 Matcher = function (seed) {
+    inherit(Eventable, this);
     inherit(Loggable, this);
 
     this.generator = null;
-    this.data = null;
-    this.seed = seed || 0;
-    this.i = this.seed;
-    this.complete = false;
+    this.chunk = null;
     this.bestMatch = {
         position: null,
         start: null,
         length: 0,
         content: null,
+        complete: false,
     };
 };
 
 Matcher.prototype.work = function () {
     var data = this.generator.getChar(this.i++);
-    for (var i = 0; i < this.data.length; i++) {
-        if (data === this.data[i]) {
+    for (var i = 0; i < this.chunk.data.length; i++) {
+        if (data === this.chunk.data[i]) {
             this.traceMatch(i);
         }
+    }
+    if (this.i >= this.chunk.position + this.chunk.length) {
+        throw new CompleteException();
     }
 };
 
 Matcher.prototype.traceMatch = function (start) {
     var data;
-    var match = true;
     var length = 0;
     var content = '';
 
     do {
-        content += this.data[start + length];
+        content += this.chunk.data[start + length];
         length++;
         data = this.generator.getChar(this.i + length);
-    } while (data === this.data[start + length]);
+    } while (data === this.chunk.data[start + length]);
     if (this.bestMatch.length < length) {
         this.bestMatch = {
             position: this.i,
             start: start,
             length: length,
             content: content,
+            complete: length === this.chunk.data.length,
         };
-        if (length === this.data.length) {
-            this.complete = true;
-        }
     }
 };
 
 Matcher.prototype.getLogData = function () {
     return {
-        'Seed': this.seed,
-        'I': this.i,
+        'Iteration': this.i,
+        'Max iteration': this.chunk.position + this.chunk.length,
         'Best match': this.bestMatch.content,
         'Best match position': this.bestMatch.position,
         'Best match start': this.bestMatch.start,
@@ -66,6 +65,16 @@ Matcher.prototype.setData = function (data) {
     return this;
 };
 
+Matcher.prototype.getChunk = function () {
+    return this.chunk;
+};
+
+Matcher.prototype.setChunk = function (chunk) {
+    this.chunk = chunk;
+    this.i = chunk.position;
+    return this;
+};
+
 Matcher.prototype.getGenerator = function () {
     return this.generator;
 };
@@ -73,4 +82,9 @@ Matcher.prototype.getGenerator = function () {
 Matcher.prototype.setGenerator = function (generator) {
     this.generator = generator;
     return this;
+};
+
+
+Matcher.prototype.isComplete = function () {
+    return this.bestMatch.complete || this.i >= this.chunk.position + this.chunk.length;
 };
