@@ -1,19 +1,35 @@
-var amount = 8;
+var amount = 2;
 var log = {};
 var logger = new MasterLogger();
 
-function bindWorker(worker) {
-    worker.on('message', function(message) {
-        log[worker.process.pid] = message;
-    });
-}
+var task = new Task('Hello world!', 10000000);
+task.split(amount);
 
-setInterval(function() {
-    logger.log(log);
-}, 1000);
+function fork() {
+    var chunk = task.getChunk();
+    if (chunk) {
+        console.log('Forked process');
+        var worker = cluster.fork();
+        worker.send({
+            type: 'Chunk',
+            payload: chunk,
+        });
+        worker.on('message', function(message) {
+            log[worker.process.pid] = message;
+            logger.log(log);
+        });
+    }
+};
+
+//function bindWorker(worker) {
+//    worker.on('message', function(message) {
+//        log[worker.process.pid] = message;
+//        logger.log(log);
+//    });
+//}
 
 for (var i = 0; i < amount; i++) {
-    bindWorker(cluster.fork());
+    fork();
 }
 
 cluster.on('exit', function (worker, code, signal) {

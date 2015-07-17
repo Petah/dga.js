@@ -5,11 +5,19 @@ var logger = new ClusterLogger();
 var manager = new CycleManager();
 var worker = new Matcher();
 
-worker.setData(data);
-worker.setGenerator(generator);
-manager.setWorker(worker);
-
 logger.addLoggable(manager);
 logger.addLoggable(worker);
 
-manager.start();
+process.on('message', function(data) {
+    console.log(data);
+    data.payload.__proto__ = global[data.type].prototype;
+
+    worker.setChunk(data.payload);
+    worker.setGenerator(generator);
+
+    manager.setWorker(worker);
+    manager.on('complete', function() {
+        process.exit(0);
+    })
+    manager.start();
+});

@@ -5,7 +5,7 @@
 <script src="../packages/dga.js"></script>
 
 <style>
-p {
+pre {
     margin: 0;
 }
 </style>
@@ -21,7 +21,7 @@ p {
     worker.setGenerator(generator);
     manager.setWorker(worker);
 </script>
-<button onclick="manager.profileOnce();">Run Once</button>
+<button onclick="manager.cycle();">Cycle</button>
 <button onclick="manager.start();">Start</button>
 <button onclick="manager.stop();">Stop</button>
 <button onclick="manager.clear()">Clear</button>
