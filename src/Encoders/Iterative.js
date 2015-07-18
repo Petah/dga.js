@@ -7,7 +7,7 @@ Iterative.prototype.encode = function (data) {
     var result = data;
     for (var i = 0; i < this.iterations; i++) {
         result = this.encoder.encode(result);
-        console.log('Size: ' + result.length);
+        dump('Size: ' + result.length);
     }
     return result;
 };

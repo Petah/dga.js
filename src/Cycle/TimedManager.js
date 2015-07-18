@@ -19,7 +19,7 @@ TimedManager.prototype.cycle = function () {
     this.totalIterations += this.iterationsPerCycle;
     this.timePerCycle = this.timer.current();
     this.log();
-    if (this.worker.complete) {
+    if (this.worker.isComplete()) {
         this.stop();
     }
 };
@@ -30,6 +30,6 @@ TimedManager.prototype.getLogData = function () {
         'Iterations per cycle': numeral(this.iterationsPerCycle).format('0,0'),
         'Time per cycle': numeral(this.timePerCycle).format('0,0.0000'),
         'Ideal cycle time': numeral(this.idealCycleTime).format('0,0'),
-        'Complete': this.worker.complete ? 'Yes' : 'No',
+        'Complete': this.worker.isComplete() ? 'Yes' : 'No',
     });
 };

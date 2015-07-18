@@ -9,7 +9,6 @@ logger.addLoggable(manager);
 logger.addLoggable(worker);
 
 process.on('message', function(data) {
-    console.log(data);
     data.payload.__proto__ = global[data.type].prototype;
 
     worker.setChunk(data.payload);

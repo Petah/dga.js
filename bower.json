@@ -17,6 +17,7 @@
   "dependencies": {
     "socket.io-client": "~0.9.16",
     "jquery": "~2.1.0",
-    "angular": "~1.4.3"
+    "angular": "~1.4.3",
+    "d3": "~3.5.6"
   }
 }

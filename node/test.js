@@ -1,6 +1,6 @@
 test = function() {
-    console.log(this);
-    console.log(this.t);
+    dump(this);
+    dump(this.t);
 }
 test.prototype.t = function(){};
 

@@ -7,7 +7,9 @@
         <link rel="stylesheet" href="/css/dga.css">
     </head>
     <body>
-        <div ng-controller="IndexController" class="flex">
+        <div ng-controller="IndexController">
+            <range data="range"></range>
+            <div ng-repeat="match in matches">{{ match }}</div>
             <div ng-repeat="(name, log) in logs" class="log">
                 <table>
                     <thead>
@@ -25,6 +27,7 @@
 
         <script src="/js/jquery.js"></script>
         <script src="/js/angular.js"></script>
+        <script src="/js/d3.js"></script>
         <script src="/js/dga.js"></script>
         <script src="/socket.io/socket.io.js"></script>
     </body>

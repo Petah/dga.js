@@ -1,14 +1,14 @@
-var amount = 2;
+var processAmount = 1;
+var chunkAmount = 10;
 var log = {};
 var logger = new MasterLogger();
 
 var task = new Task('Hello world!', 10000000);
-task.split(amount);
+task.split(chunkAmount);
 
 function fork() {
     var chunk = task.getChunk();
     if (chunk) {
-        console.log('Forked process');
         var worker = cluster.fork();
         worker.send({
             type: 'Chunk',
@@ -28,10 +28,12 @@ function fork() {
 //    });
 //}
 
-for (var i = 0; i < amount; i++) {
+for (var i = 0; i < processAmount; i++) {
     fork();
 }
 
-cluster.on('exit', function (worker, code, signal) {
-    console.log('worker ' + worker.process.pid + ' died');
+cluster.on('exit', function (worker) {
+    if (task.isAvailable()) {
+        fork();
+    }
 });

@@ -18,5 +18,8 @@ io.on('connection', function (socket) {
     console.log('connection');
     socket.on('log', function(log) {
         io.emit('log', log);
-    })
+    });
+    socket.on('task', function(log) {
+        io.emit('task', log);
+    });
 });

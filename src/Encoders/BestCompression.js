@@ -11,9 +11,9 @@ BestCompression.prototype.encode = function (data) {
         var result = this.encoder.encode(data);
         if (result.length < this.best.length) {
             this.best = result;
-            console.log('Best: ' + result.length);
+            dump('Best: ' + result.length);
         } else if (i % 100 === 0) {
-            console.log('Iteration: ' + i + ', current: ' + result.length + ', sum: ' + result.sum());
+            dump('Iteration: ' + i + ', current: ' + result.length + ', sum: ' + result.sum());
         }
     }
     return this.best;

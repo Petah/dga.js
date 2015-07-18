@@ -34,6 +34,6 @@ CycleManager.prototype.getLogData = function () {
     return extend(Manager.prototype.getLogData.call(this), {
         'Total iterations': numeral(this.totalIterations).format('0,0'),
         'Time per cycle': numeral(this.timePerCycle).format('0,0.0000'),
-        'Complete': this.worker.complete ? 'Yes' : 'No',
+        'Complete': this.worker.isComplete() ? 'Yes' : 'No',
     });
 };

@@ -48,6 +48,7 @@ Matcher.prototype.traceMatch = function (start) {
 
 Matcher.prototype.getLogData = function () {
     return {
+        'Seed': this.seed,
         'Iteration': this.i,
         'Max iteration': this.chunk.position + this.chunk.length,
         'Best match': this.bestMatch.content,
@@ -71,6 +72,7 @@ Matcher.prototype.getChunk = function () {
 
 Matcher.prototype.setChunk = function (chunk) {
     this.chunk = chunk;
+    this.seed = chunk.position;
     this.i = chunk.position;
     return this;
 };
