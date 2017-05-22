@@ -5,7 +5,7 @@ var worker = new Matcher();
 
 var name = os.hostname() + ':' + generator.name + ':' + process.pid;
 
-var socket = require('socket.io-client')('http://localhost:3000');
+var socket = require('socket.io-client')(socketHost);
 socket.on('connect', function () {
     log(name + ' connected to server ' + process.pid);
 });

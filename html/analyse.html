@@ -1,0 +1,330 @@
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.src.js"></script>
+<script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
+<style>
+    * {
+        boz-sizing: border-box;
+    }
+
+    html,
+    body,
+    .chart {
+        margin: 0;
+        padding: 0;
+    }
+
+    .chart {
+        width: 100%;
+        height: 33%;
+    }
+</style>
+<div id="chart"></div>
+<script>
+    function indexData(data) {
+        var index = [];
+        for (var i = 0; i <= 255; i++) {
+            index.push(0);
+        }
+        for (var c = 0; c < data.length; c++) {
+            index[data[c]]++;
+        }
+        return index;
+    }
+    // zip, shift bytes by +3*10, zip, shift, zip
+    // unzip, unshift, /10-3
+    // wrap over 255
+
+    function chartIndex(index, chart) {
+        var series = chart.addSeries({
+            data: (function() {
+                var data = [];
+                for (var i = 0; i <= 255; i++) {
+                    data.push({
+                        x: i,
+                        y: index[i]
+                    });
+                }
+                return data;
+            })()
+        });
+    }
+
+    var tolerance = 0.000001;
+    function numberLessThan(a, b) {
+        return (a + tolerance) < b;
+    }
+
+    function numberEquals(a, b) {
+        if ((a + tolerance) >= b && (a - tolerance) <= b) {
+            return true;
+        }
+        return false;
+    }
+
+    function sum(array) {
+        var sum = 0;
+        for (var i = 0, l = array.length; i < l; i++) {
+            sum += array[i];
+        }
+        return sum;
+    }
+
+    function shiftByte(byte, shiftAmount) {
+        var shiftSize = 256 / shiftAmount,
+            decimal = 1 / shiftAmount,
+            currentDecimal = decimal,
+            shiftCount = 1;
+        byte = byte / shiftAmount;
+        while (numberLessThan(currentDecimal, 1)) {
+            if (numberEquals(byte - Math.floor(byte), currentDecimal)) {
+                console.log(Math.ceil(shiftSize * shiftCount), Math.floor(byte));
+                return Math.ceil(shiftSize * shiftCount) + Math.floor(byte);
+            }
+            currentDecimal += decimal;
+            shiftCount++;
+        }
+        return Math.floor(byte);
+    }
+
+    function shiftData(data, shiftAmount) {
+        var result = [];
+        for (var i = 0; i < data.length; i++) {
+            result[i] = shiftByte(data[i], shiftAmount);
+        }
+        return result;
+    }
+
+    function unshiftByte(byte, shiftAmount) {
+        var shiftSize = 256 / shiftAmount,
+            decimal = 1 / shiftAmount,
+            currentDecimal = decimal,
+            shiftCount = 1;
+        var s = byte % shiftSize;
+        if (Math.floor(shiftSize) == s) {
+            s = s - shiftSize + 1;
+        }
+        //console.log(byte, shiftAmount, shiftSize, s);
+        //byte = byte * shiftAmount;
+        return byte;
+        jj = byte;
+        var shifted = byte >= shiftSize;
+        if (shifted) {
+            byte -= shiftSize;
+        }
+        byte = byte * shiftAmount;
+        if (shifted) {
+            byte++;
+        }
+        console.log(ii++, jj, byte);//, shiftAmount, shiftSize);
+        return byte;
+    }
+
+    function unshiftData(data, shiftAmount) {
+        var result = [];
+        for (var i = 0; i < data.length; i++) {
+            result[i] = unshiftByte(data[i], shiftAmount);
+        }
+        return result;
+    }
+
+    function loadData(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+
+        xhr.onload = function() {
+            var arrayBuffer = xhr.response;
+            if (arrayBuffer) {
+                var data = [],
+                    binary = new Uint8Array(arrayBuffer);
+                for (var i = 0; i < binary.length; i++) {
+                    data[i] = binary[i];
+                }
+                callback(data);
+            }
+        };
+
+        xhr.send(null);
+    }
+
+    function plotDistribution(byteArray, chart) {
+        var index = indexData(byteArray),
+            series = chart.addSeries({
+            data: (function() {
+                var data = [];
+                for (var i = 0; i <= byteArray.length; i++) {
+                    data.push({
+                        x: i,
+                        y: index[i]
+                    });
+                }
+                return data;
+            })()
+        });
+    }
+
+    function plotSequence(data, chart) {
+        var series = chart.addSeries({
+            data: (function() {
+                var data = [];
+                for (var i = 0; i < data.length; i++) {
+                    data.push({
+                        x: i,
+                        y: data[i]
+                    });
+                }
+                return data;
+            })()
+        });
+    }
+
+    function chartData(data) {
+        $('<div>').addClass('chart').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Data'
+            },
+            xAxis: {
+                title: {
+                    text: 'Byte'
+                },
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            plotOptions: {
+                series: {
+                    animation: false
+                }
+            },
+            series: [
+                {
+                    name: 'Data Set',
+                    data: data,
+                },
+            ],
+        }).appendTo('body');
+
+        var height = 100 / $('.chart').length;
+        $('.chart').each(function() {
+            $(this).css('height', height + '%');
+        });
+    }
+
+    function validate(data) {
+        var index = [];
+        for (var i = 0; i < data.length; i++) {
+            if (!index[data[i]]) {
+                index[data[i]] = 1;
+            } else {
+                index[data[i]]++;
+            }
+        }
+        for (var i = 0; i < 256; i++) {
+            if (!index[i]) {
+                console.log('Missing ' + i);
+            } else if (index[i] > 1) {
+                console.log('Extra ' + i);
+            }
+        }
+    }
+
+    loadData('../data/all-bytes.bin', function(allBytes) {
+        var shiftedData = allBytes;
+        chartData(shiftedData);
+
+        shiftedData = shiftData(shiftedData, 6);
+        chartData(shiftedData);
+        validate(shiftedData);
+
+        //shiftedData = unshiftData(shiftedData, 3);
+        //chartData(shiftedData);
+
+        $(window).trigger('resize');
+    });
+/*
+    $('#chart').highcharts({
+        chart: {
+            type: 'column',
+            events: {
+                load: function() {
+                    //loadData('../data/enwik8.zip', this);
+                    //loadData('../data/enwik8.rar', this);
+                    //loadData('../data/random-key-smash.rar', this);
+                    //loadData('../data/random-key-smash.bin', this);
+                    //shiftData('../data/random-key-smash.bin', this);
+                    //loadData('../data/all-bytes.bin', this);
+                    var chart = this;
+                    loadData('../data/all-bytes.bin', function(allBytes) {
+                        var shiftedData = allBytes;
+                        //plotSequence(allBytes, chart);
+
+                        console.log(sum(shiftedData), shiftedData);
+                        shiftedData = shiftData(shiftedData, 3);
+                        //shiftedData = unshiftData(shiftedData, 3);
+                        console.log(sum(shiftedData), shiftedData);
+                        plotSequence(shiftedData, chart);
+                        return;
+                        var time = new Date().getTime() + 100,
+                            i = 0,
+                            s = sum(shiftedData);
+                        while (new Date().getTime() < time) {
+                            var shift = Math.ceil(Math.random() * 8);
+                            shiftedData = shiftData(shiftedData, shift);
+                            i++;
+                            if (s != sum(shiftedData)) {
+                                break;
+                            }
+                        }
+                        console.log(i, s, sum(shiftedData), shiftedData);
+                        plotSequence(shiftedData, chart);
+                    });
+                    //shiftData('../data/all-bytes.bin', this, 1);
+                    //shiftData('../data/all-bytes.bin', this, 2);
+                    //shiftData('../data/all-bytes.bin', this, 2);
+                    //shiftData('../data/all-bytes.bin', this, 3);
+                    //shiftData('../data/all-bytes.bin', this, 4);
+                    //shiftData('../data/all-bytes.bin', this, 5);
+                    //shiftData('../data/all-bytes.bin', this, 6);
+                    //shiftData('../data/all-bytes.bin', this, 7);
+                    //shiftData('../data/all-bytes.bin', this, 8);
+                    //shiftData('../data/all-bytes.bin', this, 9);
+                }
+            }
+        },
+        title: {
+            text: 'Data'
+        },
+        xAxis: {
+            title: {
+                text: 'Byte'
+            },
+        },
+        yAxis: {
+            title: {
+                text: 'Value'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        plotOptions: {
+            series: {
+                animation: false
+            }
+        }
+    });
+*/
+
+</script>

@@ -12,7 +12,14 @@ Interval.prototype.start = function() {
 
 Interval.prototype.stop = function() {
     if (this.id) {
-        this.id = null;
         clearInterval(this.id);
+        this.id = null;
     }
+};
+
+Interval.prototype.isRunning = function() {
+    if (this.id) {
+        return true;
+    }
+    return false;
 };

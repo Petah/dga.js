@@ -1,0 +1,102 @@
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.src.js"></script>
+<script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
+<script src="../bower_components/lz-string/libs/lz-string-1.3.3.js"></script>
+<script src="../bower_components/pako/dist/pako.js"></script>
+<script>
+    function extend(a, b) {
+        for (var key in b) {
+            if (b.hasOwnProperty(key)) {
+                a[key] = b[key];
+            }
+        }
+        return a;
+    }
+    function require(name) {
+        return window[name] || window[name.substr(2)];
+    };
+    module = {};
+</script>
+<script src="../src/Analyse/Chart.js"></script>
+<script src="../src/Analyse/Data.js"></script>
+<script src="../src/Analyse/Validator.js"></script>
+<script src="../src/Encoders/Aggregate.js"></script>
+<script src="../src/Encoders/Iterative.js"></script>
+<script src="../src/Encoders/BestCompression.js"></script>
+<script src="../src/Encoders/Shift.js"></script>
+<script src="../src/Encoders/Zip.js"></script>
+<script src="../src/Generator.js"></script>
+<script src="../src/R1.js"></script>
+<script src="../src/R3.js"></script>
+<style>
+    * {
+        boz-sizing: border-box;
+    }
+
+    html,
+    body,
+    .chart {
+        margin: 0;
+        padding: 0;
+    }
+
+    .chart {
+        width: 100%;
+        height: 33%;
+    }
+</style>
+<div id="chart"></div>
+<script>
+    var chart = new Chart();
+    var data = new Data();
+    var aggregate = new Aggregate();
+
+    var random = new R3();
+
+    var encoder;
+/*
+    aggregate.addEncoder(new Zip());
+
+    encoder = new Shift();
+    encoder.setKey(function() {
+        return random.generateByteArray(1000);
+    });
+    aggregate.addEncoder(encoder);
+
+    aggregate.addEncoder(new Zip());
+
+    var iterative = new BestCompression();
+    iterative.setIterations(101);
+    iterative.setEncoder(aggregate);
+*/
+    setInterval(function() {
+        for (var i = 0; i < 100; i++) {
+            data = Data.fromArray(random.generateByteArray(1000));
+            data = new Zip().encode(data);
+            console.log(data.length);
+        }
+    }, 1000);
+    //chart.chartData(data);
+
+    var loaded = function() {
+        // Validate encoders
+        /*
+        var validator = new Validator();
+        validator.setEncoder(iterative);
+        validator.setData(data);
+        console.log(validator.isValid() ? 'Valid' : 'Invalid');
+        */
+
+        // Chart data
+        data = iterative.encode(data);
+        chart.chartData(data);
+    };
+
+    /*
+    data.load('../data/random-key-smash.bin').then(function() {
+        setTimeout(function() {
+            loaded();
+        }, 1);
+    });
+    */
+</script>

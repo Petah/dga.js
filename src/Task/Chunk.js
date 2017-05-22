@@ -1,4 +1,5 @@
 Chunk = function(data, position, length) {
+    inherit(Serializable, this, ['Chunk']);
     this.data = data;
     this.position = position;
     this.length = length;

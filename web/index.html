@@ -8,7 +8,9 @@
     </head>
     <body>
         <div ng-controller="IndexController">
-            <range data="range"></range>
+            <div ng-repeat="task in tasks">
+                <task task="task"></task>
+            </div>
             <div ng-repeat="match in matches">{{ match }}</div>
             <div ng-repeat="(name, log) in logs" class="log">
                 <table>

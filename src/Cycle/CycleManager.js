@@ -3,10 +3,7 @@ CycleManager = function () {
 
     this.cycles = 100000;
 
-    this.timers.push({
-        callback: this.cycle.bind(this),
-        interval: this.idealCycleTime
-    });
+    this.addTimer('CycleManager.cycle', this.cycle, 100);
 };
 
 CycleManager.prototype.cycle = function () {
@@ -24,6 +21,7 @@ CycleManager.prototype.cycle = function () {
     }
     this.totalIterations += this.cycles;
     this.timePerCycle = this.timer.current();
+    this.report();
     this.log();
     if (this.worker.isComplete()) {
         this.stop();

@@ -5,7 +5,7 @@ var logger = new MasterLogger();
 var task = new Task('Hello world!', 4000000000);
 task.split(chunkAmount);
 
-var socket = require('socket.io-client')('http://localhost:3000');
+var socket = require('socket.io-client')(socketHost);
 socket.on('connect', function () {
     log('Master connected to server ' + process.pid);
     socket.emit('task', task);

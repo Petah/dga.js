@@ -1,8 +1,9 @@
-require('./index');
+require('.');
 
-var r4 = new R4(Seed.int());
-var i = 1;
+const r4 = new R4(Seed.int());
+const hex = new Hex();
 
-while (true) {
-    process.stdout.write(r4.getChar(i++));
+for (let i = 0; i < 1024; i++) {
+    hex.write(r4.getChar(i++));
 }
+hex.flush();

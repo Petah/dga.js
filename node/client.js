@@ -5,13 +5,13 @@ var generator = new R5();
 var logger = new CLILogger();
 //var manager = new TimedManager();
 var manager = new CycleManager();
-var worker = new Matcher();
+var matcher = new Matcher();
 
-worker.setData(data);
-worker.setGenerator(generator);
-manager.setWorker(worker);
+matcher.setData(data);
+matcher.setGenerator(generator);
+manager.setWorker(matcher);
 
 logger.addLoggable(manager);
-logger.addLoggable(worker);
+logger.addLoggable(matcher);
 
 manager.start();

@@ -1,0 +1,167 @@
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/highcharts-release/highcharts.src.js"></script>
+<style>
+    * {
+        boz-sizing: border-box;
+    }
+
+    html,
+    body,
+    .chart {
+        margin: 0;
+        padding: 0;
+    }
+
+    .chart {
+        width: 100%;
+        height: 33%;
+    }
+
+    .charts {
+        -webkit-column-count: 2;
+        -moz-column-count: 2;
+        column-count: 2;
+    }
+</style>
+<div class="charts"></div>
+<script>
+    var tolerance = 0.000001;
+    function numberLessThan(a, b) {
+        return (a + tolerance) < b;
+    }
+
+    function numberEquals(a, b) {
+        if ((a + tolerance) >= b && (a - tolerance) <= b) {
+            return true;
+        }
+        return false;
+    }
+
+    function sum(array) {
+        var sum = 0;
+        for (var i = 0, l = array.length; i < l; i++) {
+            sum += array[i];
+        }
+        return sum;
+    }
+
+    function shiftByte(byte, shiftAmount) {
+        var shiftSize = 256 / shiftAmount,
+            decimal = 1 / shiftAmount,
+            currentDecimal = decimal,
+            shiftCount = 1;
+        byte = byte / shiftAmount;
+        while (numberLessThan(currentDecimal, 1)) {
+            if (numberEquals(byte - Math.floor(byte), currentDecimal)) {
+                return Math.ceil(shiftSize * shiftCount) + Math.floor(byte);
+            }
+            currentDecimal += decimal;
+            shiftCount++;
+        }
+        return Math.floor(byte);
+    }
+
+    function shiftData(data, shiftAmount) {
+        var result = [];
+        for (var i = 0; i < data.length; i++) {
+            result[i] = shiftByte(data[i], shiftAmount);
+        }
+        return result;
+    }
+
+    function loadData(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+
+        xhr.onload = function() {
+            var arrayBuffer = xhr.response;
+            if (arrayBuffer) {
+                var data = [],
+                    binary = new Uint8Array(arrayBuffer);
+                for (var i = 0; i < binary.length; i++) {
+                    data[i] = binary[i];
+                }
+                callback(data);
+            }
+        };
+
+        xhr.send(null);
+    }
+
+    function chartData(data) {
+        $('<div>').addClass('chart').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '',
+            },
+            legend: {
+                enabled: false,
+            },
+            xAxis: {
+                title: {
+                    enabled: false,
+                },
+            },
+            yAxis: {
+                min: 0,
+                max: 256,
+                endOnTick: false,
+                tickInterval: 64,
+                title: {
+                    enabled: false,
+                }
+            },
+            plotOptions: {
+                series: {
+                    animation: false
+                }
+            },
+            series: [
+                {
+                    name: 'Data Set',
+                    data: data,
+                },
+            ],
+        }).appendTo('.charts');
+
+        var height = 100 / $('.chart').length * 2;
+        $('.chart').each(function() {
+            $(this).css('height', height + '%');
+        });
+    }
+
+    function validate(data) {
+        var index = [];
+        for (var i = 0; i < data.length; i++) {
+            if (!index[data[i]]) {
+                index[data[i]] = 1;
+            } else {
+                index[data[i]]++;
+            }
+        }
+        for (var i = 0; i < 256; i++) {
+            if (!index[i]) {
+                console.log('Missing ' + i);
+            } else if (index[i] > 1) {
+                console.log('Extra ' + i);
+            }
+        }
+    }
+
+    loadData('../data/all-bytes.bin', function(allBytes) {
+        var shiftedData = allBytes;
+        chartData(shiftedData);
+
+        for (var i = 2; i < 11; i++) {
+            shiftedData = shiftData(allBytes, i);
+            chartData(shiftedData);
+            console.log('Shift by ' + i);
+            validate(shiftedData);
+        }
+
+        $(window).trigger('resize');
+    });
+</script>

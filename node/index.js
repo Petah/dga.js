@@ -1,14 +1,29 @@
+_ = require('lodash');
 Duration = require('duration');
-os = require('os');
 cluster = require('cluster');
 extend = require('extend');
 numeral = require('numeral');
+os = require('os');
 ss = require('simple-statistics');
 
+socketHost = 'http://localhost:3000';
+
 dump = function() {
+    console.log('-- Dump ----------------------------------');
     console.log.apply(console, arguments);
     console.trace();
     process.exit();
+};
+
+dumpcounter = 0;
+dumpcount = function() {
+    dumpcounter++;
+    if (arguments[0] == dumpcounter) {
+        console.log('-- Dump Count ----------------------------');
+        console.log.apply(console, arguments);
+        console.trace();
+        process.exit();
+    }
 };
 
 log = function() {
@@ -21,7 +36,7 @@ inherit = function(parent, child, args) {
             child[key] = parent.prototype[key];
         }
     }
-    parent.apply(child, args || []);
+    parent.apply(child, args ? Array.prototype.slice.call(args, 0) : []);
 };
 
 require('require-dir')(__dirname + '/../src', {

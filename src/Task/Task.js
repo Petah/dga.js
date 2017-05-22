@@ -1,4 +1,5 @@
 Task = function(data, length) {
+    inherit(Serializable, this, ['Task']);
     this.data = data;
     this.length = length;
     this.chunks = [];

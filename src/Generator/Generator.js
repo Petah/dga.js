@@ -1,42 +1,41 @@
-Generator = function() {
-};
-
-Generator.prototype.intToByte = function(value) {
-    return value % 256;
-};
-
-Generator.prototype.floatToByte = function(value) {
-    return this.intToByte(this.floatToInt(value));
-};
-
-Generator.prototype.floatToInt = function(value) {
-    return value.toString().replace(/[.e-]/g, '');
-};
-
-Generator.prototype.getInt = function(i) {
-    return this.floatToInt(this.getFloat(i));
-};
-
-Generator.prototype.getByte = function(i) {
-    return this.floatToByte(this.getFloat(i));
-};
-
-Generator.prototype.getChar = function(i) {
-    return String.fromCharCode(this.getByte(i));
-};
-
-Generator.prototype.generateString = function(length) {
-    var result = '';
-    for (var i = 0; i < length; i++) {
-        result += this.getChar(i);
+Generator = class {
+    intToByte(value) {
+        return value % 256;
     }
-    return result;
-};
 
-Generator.prototype.generateByteArray = function(length) {
-    var result = [];
-    for (var i = 0; i < length; i++) {
-        result.push(this.getByte(i));
+    floatToByte(value) {
+        return this.intToByte(this.floatToInt(value));
     }
-    return result;
-};
+
+    floatToInt(value) {
+        return parseInt(value.toString().replace(/[.e-]/g, ''));
+    }
+
+    getInt(i) {
+        return this.floatToInt(this.getFloat(i));
+    }
+
+    getByte(i) {
+        return this.floatToByte(this.getFloat(i));
+    }
+
+    getChar(i) {
+        return String.fromCharCode(this.getByte(i));
+    }
+
+    generateString(length) {
+        var result = '';
+        for (var i = 0; i < length; i++) {
+            result += this.getChar(i);
+        }
+        return result;
+    }
+
+    generateByteArray(length) {
+        var result = [];
+        for (var i = 0; i < length; i++) {
+            result.push(this.getByte(i));
+        }
+        return result;
+    }
+}

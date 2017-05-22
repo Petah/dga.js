@@ -1,4 +1,4 @@
-Matcher = function (seed) {
+Matcher = function () {
     inherit(Eventable, this);
     inherit(Loggable, this);
 

@@ -2,13 +2,12 @@ Manager = function(worker) {
     inherit(IntervalManager, this);
     inherit(Eventable, this);
     inherit(Loggable, this);
+    inherit(Reportable, this);
+    inherit(Serializable, this, ['Manager']);
 
     this.worker = worker;
     this.timePerCycle = null;
-    this.timers.push({
-        callback: this.timeIterationsPerSecond.bind(this),
-        interval: 1000
-    });
+    this.addTimer('Manager.timeIterationsPerSecond', this.timeIterationsPerSecond, 1000);
 
     this.totalIterations = 0;
     this.iterationsPerCycle = 0;
