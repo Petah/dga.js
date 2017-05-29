@@ -1,6 +1,9 @@
 require('.');
 
 const fs = require('fs');
+const formatter = require('js-beautify');
+// console.log(formatter);
+// process.exit();
 
 class FunctionGenerator {
     constructor(random) {
@@ -11,6 +14,10 @@ class FunctionGenerator {
             subtract: () => `result -= i;`,
             multiply: () => `result *= i;`,
             divide: () => `result /= i;`,
+            leftShift: () => `result = result << ${this.randomInt32()};`,
+            rightShift: () => `result = result >> ${this.randomInt32()};`,
+            leftShiftSquare: () => `result ^= (result << ${this.randomInt32()});`,
+            rightShiftSquare: () => `result ^= (result >> ${this.randomInt32()});`,
         };
     }
 
@@ -18,7 +25,7 @@ class FunctionGenerator {
         const result = []
         const operations = Object.values(this.operations);
         for (let i = 0; i < this.operationCount; i++) {
-            const operation = operations[this.random.getInt() % operations.length]();
+            const operation = operations[this.random.getInt() % operations.length].bind(this)();
             result.push(operation);
         }
         return `
@@ -29,13 +36,25 @@ class FunctionGenerator {
             }
         `.replace(/^ {12}/gm, '').trim();
     }
+
+    randomInt8() {
+        return Math.floor(Math.random() * Math.pow(2, 8));
+    }
+
+    randomInt16() {
+        return Math.floor(Math.random() * Math.pow(2, 16));
+    }
+
+    randomInt32() {
+        return Math.floor(Math.random() * Math.pow(2, 32));
+    }
 }
 
 const r3 = new R3();
 const functionGenerator = new FunctionGenerator(r3);
 let generated = functionGenerator.generate();
 console.log(generated);
-generated = `
+let wrapper = `
     require('./base');
     const mutate = ${generated}
 
@@ -43,11 +62,21 @@ generated = `
     const data = fs.readFileSync(__dirname + '/../../data/random-key-smash.bin');
     const hex = new Hex();
 
+    let result = '';
     let i = 0;
     for (const byte of data) {
-        hex.write(String.fromCharCode(mutate(i++, byte)));
+        result += String.fromCharCode(mutate(i++, byte));
     }
-    hex.flush();
+    module.exports = result;
 `;
-fs.writeFileSync(__dirname + '/functions/generated.js', generated);
-require('./functions/generated');
+wrapper = formatter.js(wrapper);
+fs.writeFileSync(__dirname + '/functions/generated.js', wrapper);
+const result = require('./functions/generated');
+const hex = new Hex();
+for (const byte of result) {
+    hex.write(byte);
+}
+hex.flush();
+console.log(new Distribution(generated, 16).toString());
+Distribution.summarize(generated, 16);
+console.log(generated);

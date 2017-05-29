@@ -23,17 +23,19 @@ Generator = class {
         return String.fromCharCode(this.getByte(i));
     }
 
-    generateString(length) {
-        var result = '';
-        for (var i = 0; i < length; i++) {
-            result += this.getChar(i);
+    generateString(seed, length) {
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            let next = this.getChar(seed);
+            result += next;
+            seed = next;
         }
         return result;
     }
 
     generateByteArray(length) {
-        var result = [];
-        for (var i = 0; i < length; i++) {
+        let result = [];
+        for (let i = 0; i < length; i++) {
             result.push(this.getByte(i));
         }
         return result;
