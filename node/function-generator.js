@@ -8,16 +8,17 @@ const formatter = require('js-beautify');
 class FunctionGenerator {
     constructor(random) {
         this.random = random;
-        this.operationCount = 4;
+        this.seed = this.randomInt();
+        this.operationCount = Math.ceil(Math.random() * 10);
         this.operations = {
-            add: () => `result += i;`,
-            subtract: () => `result -= i;`,
-            multiply: () => `result *= i;`,
-            divide: () => `result /= i;`,
-            leftShift: () => `result = result << ${this.randomInt32()};`,
-            rightShift: () => `result = result >> ${this.randomInt32()};`,
-            leftShiftSquare: () => `result ^= (result << ${this.randomInt32()});`,
-            rightShiftSquare: () => `result ^= (result >> ${this.randomInt32()});`,
+            add: () => `result += ${this.randomInt()};`,
+            subtract: () => `result -= ${this.randomInt()};`,
+            multiply: () => `result *= ${this.randomInt()};`,
+            divide: () => `result /= ${this.randomInt()};`,
+            leftShift: () => `result = result << ${this.randomInt()};`,
+            rightShift: () => `result = result >> ${this.randomInt()};`,
+            leftShiftSquare: () => `result ^= (result << ${this.randomInt()});`,
+            rightShiftSquare: () => `result ^= (result >> ${this.randomInt()});`,
         };
     }
 
@@ -29,43 +30,31 @@ class FunctionGenerator {
             result.push(operation);
         }
         return `
-            (i) => {
-                let result = i;
+            (seed) => {
+                let result = seed;
                 ${result.join('\n    ')}
                 return Math.abs(result) % 256;
             }
         `.replace(/^ {12}/gm, '').trim();
     }
 
-    randomInt8() {
-        return Math.floor(Math.random() * Math.pow(2, 8));
-    }
-
-    randomInt16() {
-        return Math.floor(Math.random() * Math.pow(2, 16));
-    }
-
-    randomInt32() {
-        return Math.floor(Math.random() * Math.pow(2, 32));
+    randomInt() {
+        return Random.int(Random.choice([1, 2, 3, 4]));
     }
 }
 
-const r3 = new R3();
-const functionGenerator = new FunctionGenerator(r3);
+const functionGenerator = new FunctionGenerator(new R3());
 let generated = functionGenerator.generate();
-console.log(generated);
+let length = 1024;
 let wrapper = `
-    require('./base');
-    const mutate = ${generated}
-
-    const fs = require('fs');
-    const data = fs.readFileSync(__dirname + '/../../data/random-key-smash.bin');
-    const hex = new Hex();
+    const next = ${generated}
 
     let result = '';
-    let i = 0;
-    for (const byte of data) {
-        result += String.fromCharCode(mutate(i++, byte));
+    let seed = ${functionGenerator.seed};
+    for (let i = 0; i < ${length}; i++) {
+        let nextSeed = next(seed);
+        result += String.fromCharCode(nextSeed);
+        seed = nextSeed;
     }
     module.exports = result;
 `;
@@ -77,6 +66,6 @@ for (const byte of result) {
     hex.write(byte);
 }
 hex.flush();
-console.log(new Distribution(generated, 16).toString());
-Distribution.summarize(generated, 16);
+console.log(new Distribution(result, 16).toString());
+console.log('Seed: ', functionGenerator.seed);
 console.log(generated);

@@ -2,49 +2,64 @@ require('.');
 
 const fs = require('fs');
 const random = new R4();
-const data = fs.readFileSync(__dirname + '/../data/random-key-smash.bin');
+// const data = fs.readFileSync(__dirname + '/../data/random-key-smash.bin');
+const data = Random.string(Math.pow(2, 10));
+console.log(new Distribution(data, 16).toString());
 
 class Chromosome {
     constructor(generation, mutation) {
-        this.geneticCode = null;
+        this.randomOutput = null;
         this.score = null;
-        this.seed = 1;
         this.length = data.length;
         this.generation = generation || 1;
         this.mutation = mutation || 1;
-        this.direction = 1;
+        this.functionGenerator = new FunctionGenerator(new R3());
+        this.functionCode = this.functionGenerator.generate();
+        this.function = eval(this.functionCode);
+        this.seed = this.functionGenerator.seed;
+    }
+
+    clone() {
+        const clone = new Chromosome(this.generation, this.mutation);
+        clone.functionGenerator = this.functionGenerator;
+        clone.functionCode = this.functionCode;
+        clone.function = this.function;
+        clone.seed = this.seed;
+        return clone;
     }
 
     mate(other) {
         const chromosome1 = new Chromosome(this.generation + 1);
-        chromosome1.geneticCode = random.generateString(this.length);
-        chromosome1.seed = this.seed + (this.seed < other.seed ? -2 : 2);
         const chromosome2 = new Chromosome(this.generation + 1);
-        chromosome2.geneticCode = random.generateString(this.length);
-        chromosome2.seed += other.seed + (this.seed < other.seed ? 2 : -2);
         return [chromosome1, chromosome2];
     }
 
     mutate() {
-        this.seed += this.direction;
         this.mutation++;
+        this.seed = this.functionGenerator.randomInt();
         return this;
     }
 
     test(data) {
         this.generate();
-        this.score = new Distribution(data, 16).score(this.geneticCode);
+        this.score = new Distribution(data, 16).score(this.randomOutput);
         return this;
     }
 
     generate() {
-        this.geneticCode = random.generateString(this.seed, this.length);
+        let seed = this.seed;
+        let result = '';
+        for (let i = 0; i < this.length; i++) {
+            let nextSeed = this.function(seed);
+            result += String.fromCharCode(nextSeed);
+            seed = nextSeed;
+        }
+        this.randomOutput = result;
         return this;
     }
 
     randomize() {
         this.direction = Math.random() < 0.5 ? 1 : -1;
-        this.seed = Random.int(4);
         return this;
     }
 }
@@ -70,30 +85,50 @@ class Population {
     }
 
     cull() {
-        const children = this.population[0].mate(this.population[1]);
-        this.population[0] = new Chromosome().randomize();
-        this.population[1] = new Chromosome().randomize();
-        this.population.splice(this.population.length - 2, 2, children[0], children[1]);
+        // const children = this.population[0].mate(this.population[1]);
+        // this.population.splice(this.population.length - 2, 2, children[0], children[1]);
 
-        this.population.forEach((chromosome) => {
-            chromosome.mutate();
-        });
+        // Randomize all except best
+        // for (let i = 1; i < this.population.length; i++) {
+        //     this.population[i] = new Chromosome().randomize();
+        // }
+
+        // Mutate best
+        this.population[1] = this.population[0].clone().mutate();
+
+        // Randomize worst
+        this.population[2] = new Chromosome().randomize();
+
+        // Mutate all
+        // this.population.forEach((chromosome) => {
+        //     chromosome.mutate();
+        // });
     }
 
     display() {
         console.log(`--- Generation ${this.generationNumber} -----------------------`);
         this.population.forEach(chromosome => console.log(
             'Chromosome score:', chromosome.score,
-            'seed:', chromosome.seed,
             'generation:', chromosome.generation,
-            'mutation:', chromosome.mutation
+            'mutation:', chromosome.mutation,
+            'seed:', chromosome.seed
+            // 'function:', chromosome.functionCode
         ));
+        console.log(
+            'Chromosome score:', this.population[0].score,
+            'generation:', this.population[0].generation,
+            'mutation:', this.population[0].mutation,
+            'seed:', this.population[0].seed,
+            'function:', this.population[0].functionCode
+        );
     }
 }
-
-const population = new Population(data, 20);
-while (true) {
-    for (let i = 0; i < 100; i++) {
+const populationCount = 3;
+const generationCount = 1000;
+const population = new Population(data, populationCount);
+let iterationCount = 100;
+while (iterationCount-- > 0) {
+    for (let i = 0; i < generationCount; i++) {
         population.generation();
         population.cull();
     }
